@@ -16,6 +16,7 @@ revent=StringVar()
 #open a database connection
 con=mysql.connector.connect(user="root", password="dbsys", database="reminder", host="localhost", port=3306)
 if(con.is_connected()):
+	#messagebox.showinfo("success","Connected")
 	pass
 cur = con.cursor()
 cur.execute("""CREATE TABLE events(rdate date,revent varchar(40))""")
@@ -26,9 +27,13 @@ def remdate():
                 i=0
                 num1=(datetime.datetime.now().strftime("%Y-%m-%d"))				
                 dat=str(num1)
+		#print(dat)
                 cur.execute("select revent from events where Date =%(value)s ",{'value': dat})		
                 eve = cur.fetchall()
-                for  row in eve:			
+                for  row in eve:
+			lS=Label(top,fg="blue")
+			lS.config(text="Todays Events:  "+row[i])	
+			lS.grid(row=1, column=2)
                         messagebox.showinfo("Todays Events:",row[i])	
                         i+=1
         except mysql.connector.Error as error:
@@ -46,7 +51,7 @@ def insert():
 		print("Failed to insert into MySQL table {}".format(error))
 	finally:
 		dates.delete(0, END)
-		entry1.delete(0, END)
+		e1.delete(0, END)
 		
 def Update():
 	try:
@@ -59,57 +64,71 @@ def Update():
 		print("Failed to Update into MySQL table {}".format(error))
 	finally:
 		dates.delete(0, END)
-		entry1.delete(0, END)	
+		e1.delete(0, END)	
+)	
 
-def view():
-    try:
-                
-        cur.execute("select * from events")
-        #Fetch all the rows from the query
-        result=cur.fetchall()
-        #store the fetched result in a file
-        f=open('details.txt','w')
-        for data in result:
-            f.write(str(data)+'\n')
-        f.close()
-        con.close()
-        #make a subprocess module to open software and file that contain all details of remd table
-        import subprocess as sp
-        pName='notepad.exe'
-        fName='detail.txt'
-        sp.Popen([pName,fName])
-    except mysql.connector.Error as error :
-        print("Failed to view MySQL table {}".format(error))
-           	
+def Delete():
+	try:
+		A=rdate.get()
+		B=revent.get()
+		cur.execute("Delete from  events ")
+		con.commit()
+		messagebox.showinfo("success","record Deleted")
+	except mysql.connector.Error as error :
+		print("Failed to Delete into MySQL table {}".format(error))
+	finally:
+		dates.delete(0, END)
+		e1.delete(0, END)			
 		
-
 #Designing GUI
 top.title("Reminder status")
 top.geometry('500x200')
 
-#create tkinter label widget
-label1=Label(top, text='Rdate(yymmdd)')
+#insert
+l1=Label(top, text='Date(yymmdd)')
 dates=Entry(top,textvariable=rdate)
-label2=Label(top, text='Revent')
+l2=Label(top, text='Event(description)')
+e1=Entry(top, textvariable=revent)
+b1=Button(top, text='Insert',command =insert)
 
-#create tkinter entry widget
-entry1=Entry(top, textvariable=revent)
+#update
+lU=Label(top, text='Date( yymmdd )')
+datesU=Entry(top,textvariable=rdate)
+l2U=Label(top, text='Event(description)')
+e2U=Entry(top, textvariable=revent)
+bU=Button(top, text='Update',command =Update)
 
-#create tkinter button widget
-button1=Button(top, text='Insert',command =insert)
-button2=Button(top, text='Update',command =Update)
-button3=Button(top, text='View',command =view)
+#DElete
+lD=Label(top, text='Date( yymmdd )')
+datesD=Entry(top,textvariable=rdate)
+bD=Button(top, text='Delete',command =Delete)
+#View
+b4=Button(top, text='Refresh',command =remdate)
 
-#placing each widget in positions using grid
-label1.grid(row=1, column=0)
-dates.grid(row=1, column=1)
-label2.grid(row=2, column=0)
-entry1.grid(row=2, column=1)
-button1.grid(row=5, column=0)
-button2.grid(row=5, column=1)
-button3.grid(row=5, column=2)
+l21=Label(top, text='ADD EVENT',fg="red")
+l22=Label(top, text='UPDATE EVENT',fg="red")
+l23=Label(top, text='DELETE EVENT',fg="red")
+
+l21.grid(row=3, column=2)
+l1.grid(row=4, column=0)
+dates.grid(row=4, column=1)
+l2.grid(row=5, column=0)
+e2.grid(row=5, column=1)
+b1.grid(row=6, column=2)
+
+l22.grid(row=8, column=2)
+lU.grid(row=9, column=0)
+datesU.grid(row=9, column=1)
+l2U.grid(row=10, column=0)
+e2U.grid(row=10, column=1)
+bU.grid(row=11, column=2)
+
+l23.grid(row=13, column=2)
+lD.grid(row=14, column=0)
+datesD.grid(row=14, column=1)
+bD.grid(row=15, column=2)
+b4.grid(row=17, column=2)
 top.mainloop()
-
 
     
          
